@@ -137,7 +137,7 @@
           </Card>
         </div>
 
-        <div class="pt-6 grid xl:grid-cols-3 gap-[16px] md:grid-cols-2 sm:grid-cols-1">
+        <div class="pt-6 grid xl:grid-cols-2 gap-[16px] md:grid-cols-2 sm:grid-cols-1">
           <Card class="box-border flex flex-col w-full h-[460px] overflow-hidden">
             <CardHeader>
               <CardTitle>Browsers</CardTitle>
@@ -192,13 +192,12 @@
 
           <Card class="box-border flex flex-col w-full h-[460px] overflow-hidden">
             <CardHeader>
-              <CardTitle>Areas</CardTitle>
+              <CardTitle>IP Addresses</CardTitle>
             </CardHeader>
             <CardContent class="box-border pt-0 w-full h-full overflow-hidden">
-              <ScrollArea class="box-border p-2 pt-0 h-full w-full pages-list" v-if="resData.area != undefined">
-                <p class="page-item" v-for="(i, idx) in resData.area" :key="idx">
-                  <img :src="getIcon(i.name)">
-                  <span class="line-clamp-1">{{ i.code }}</span>
+              <ScrollArea class="box-border p-2 pt-0 h-full w-full pages-list" v-if="resData.ip != undefined">
+                <p class="page-item" v-for="(i, idx) in resData.ip" :key="idx">
+                  <span class="line-clamp-1">{{ i.name || '(Unknown IP)' }}</span>
                   <span class="line-clamp-1">{{ i.value }}</span>
                   <em>{{ i.per }}<i :style="{ width: i.per }"></i></em>
                 </p>
@@ -218,12 +217,13 @@
 
           <Card class="box-border flex flex-col w-full h-[460px] overflow-hidden">
             <CardHeader>
-              <CardTitle>IP Addresses</CardTitle>
+              <CardTitle>Areas</CardTitle>
             </CardHeader>
             <CardContent class="box-border pt-0 w-full h-full overflow-hidden">
-              <ScrollArea class="box-border p-2 pt-0 h-full w-full pages-list" v-if="resData.ip != undefined">
-                <p class="page-item" v-for="(i, idx) in resData.ip" :key="idx">
-                  <span class="line-clamp-1">{{ i.name || '(Unknown IP)' }}</span>
+              <ScrollArea class="box-border p-2 pt-0 h-full w-full pages-list" v-if="resData.area != undefined">
+                <p class="page-item" v-for="(i, idx) in resData.area" :key="idx">
+                  <img :src="getIcon(i.name)">
+                  <span class="line-clamp-1">{{ i.code }}</span>
                   <span class="line-clamp-1">{{ i.value }}</span>
                   <em>{{ i.per }}<i :style="{ width: i.per }"></i></em>
                 </p>
