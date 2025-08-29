@@ -241,8 +241,8 @@
             </CardContent>
           </Card>
         </div>
-      </section>
       <div ref="mapDOM" class="map-view"></div>
+      </section>
     </main>
     <footer>
       <p><img src="./assets/svg/ing.svg"></p>
