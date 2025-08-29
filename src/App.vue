@@ -470,6 +470,12 @@ const mapMain = ref<any>();
 let worldRegistered = false;
 let isoToName: Record<string, string> = {};
 let worldIsoList: Array<string> = [];
+// ISO 别名映射：将统计返回的代码映射到底图属性值
+const isoAlias: Record<string, string> = {
+  TW: 'CN-TW',
+  HK: 'CN-HK',
+  MO: 'CN-MO'
+};
 const ensureWorldMap = async () => {
   if (worldRegistered) return;
   try {
@@ -507,7 +513,9 @@ const renderWorldMap = async (areaList: Array<any> = []) => {
   if (!mapMain.value) return;
   // 以 ISO2 为键，按“绝对访问量”映射亮度，并补齐无数据国家为 0
   const valueByIso: Record<string, number> = areaList.reduce((m: any, i: any) => {
-    m[i.name] = toNumber(i.value);
+    const key = isoAlias[i.name] || i.name;
+    const val = toNumber(i.value);
+    m[key] = (m[key] || 0) + val;
     return m;
   }, {} as Record<string, number>);
   const mapData = (worldIsoList.length ? worldIsoList : Object.keys(valueByIso)).map((iso: string) => {
