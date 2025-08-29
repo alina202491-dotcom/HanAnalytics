@@ -196,8 +196,15 @@ const initMap = async () => {
   // 创建图表实例
   mapChart = markRaw(echarts.init(mapContainer.value, null, { 
     renderer: 'canvas',
-    useDirtyRect: true 
+    useDirtyRect: true,
+    width: mapContainer.value.offsetWidth,
+    height: mapContainer.value.offsetHeight
   }))
+
+  console.log('Map chart initialized with container size:', {
+    width: mapContainer.value.offsetWidth,
+    height: mapContainer.value.offsetHeight
+  })
 
   // 获取当前数据的最大值
   const maxValue = Math.max(...(props.data?.map(item => item.value) || [100]))
@@ -275,48 +282,51 @@ const initMap = async () => {
       padding: [8, 6],
       textGap: 10
     },
+    geo: {
+      map: 'world',
+      roam: true,  // 启用所有交互：拖拽和滚轮缩放
+      zoom: 1.1,
+      center: [0, 20],
+      scaleLimit: {
+        min: 0.5,
+        max: 10
+      },
+      label: {
+        show: false,
+        color: '#f8fafc',
+        fontSize: 9
+      },
+      itemStyle: {
+        areaColor: '#1e293b',
+        borderColor: '#475569',
+        borderWidth: 0.8,
+        borderType: 'solid',
+        shadowColor: 'rgba(0, 0, 0, 0.2)',
+        shadowBlur: 3,
+        shadowOffsetX: 1,
+        shadowOffsetY: 1
+      },
+      emphasis: {
+        label: {
+          show: true,
+          color: '#f8fafc',
+          fontSize: 10,
+          fontWeight: '600'
+        },
+        itemStyle: {
+          areaColor: '#6366f1',
+          borderColor: '#8b5cf6',
+          borderWidth: 1.5,
+          shadowColor: 'rgba(99, 102, 241, 0.6)',
+          shadowBlur: 10
+        }
+      }
+    },
     series: [
       {
         name: '访客分布',
         type: 'map',
-        map: 'world',
-        roam: true,  // 启用拖拽和缩放
-        zoom: 1.1,
-        center: [0, 20],
-        scaleLimit: {
-          min: 0.5,
-          max: 10
-        },
-        label: {
-          show: false,
-          color: '#f8fafc',
-          fontSize: 9
-        },
-        itemStyle: {
-          areaColor: '#1e293b',
-          borderColor: '#475569',
-          borderWidth: 0.8,
-          borderType: 'solid',
-          shadowColor: 'rgba(0, 0, 0, 0.2)',
-          shadowBlur: 3,
-          shadowOffsetX: 1,
-          shadowOffsetY: 1
-        },
-        emphasis: {
-          label: {
-            show: true,
-            color: '#f8fafc',
-            fontSize: 10,
-            fontWeight: '600'
-          },
-          itemStyle: {
-            areaColor: '#6366f1',
-            borderColor: '#8b5cf6',
-            borderWidth: 1.5,
-            shadowColor: 'rgba(99, 102, 241, 0.6)',
-            shadowBlur: 10
-          }
-        },
+        geoIndex: 0,  // 关联到geo组件
         data: props.data?.map(item => ({
           name: normalizeCountryName(item.name),
           value: item.value,
@@ -334,8 +344,20 @@ const initMap = async () => {
   // 设置配置
   mapChart.setOption(option, true)
 
+  // 确保鼠标事件正常工作
+  mapChart.getZr().configLayer(0, {
+    motionBlur: false,
+    lastFrameAlpha: 0.7
+  })
+
   // 监听窗口大小变化
   window.addEventListener('resize', handleResize)
+
+  // 添加鼠标事件监听来确保交互正常
+  mapChart.on('georoam', function (params) {
+    // 地图漫游事件，确保交互正常
+    console.log('Map roam event:', params)
+  })
 }
 
 // 根据数值获取颜色
@@ -384,17 +406,17 @@ const updateMapData = () => {
     }]
   }
 
-  mapChart.setOption(option)
+  mapChart.setOption(option, { replaceMerge: ['series'] })
 }
 
 // 重置视图
 const resetView = () => {
   if (mapChart) {
     mapChart.setOption({
-      series: [{
+      geo: {
         zoom: 1.1,
         center: [0, 20]
-      }]
+      }
     })
   }
 }
@@ -404,7 +426,9 @@ const zoomIn = () => {
   if (mapChart) {
     mapChart.dispatchAction({
       type: 'geoZoom',
-      zoom: 1.5
+      zoom: 1.5,
+      originX: mapContainer.value?.offsetWidth ? mapContainer.value.offsetWidth / 2 : 0,
+      originY: mapContainer.value?.offsetHeight ? mapContainer.value.offsetHeight / 2 : 0
     })
   }
 }
@@ -414,7 +438,9 @@ const zoomOut = () => {
   if (mapChart) {
     mapChart.dispatchAction({
       type: 'geoZoom',
-      zoom: 0.7
+      zoom: 0.7,
+      originX: mapContainer.value?.offsetWidth ? mapContainer.value.offsetWidth / 2 : 0,
+      originY: mapContainer.value?.offsetHeight ? mapContainer.value.offsetHeight / 2 : 0
     })
   }
 }
@@ -493,6 +519,21 @@ div[ref="mapContainer"] {
   border-radius: 0 0 8px 8px;
   overflow: hidden;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+div[ref="mapContainer"]:active {
+  cursor: grabbing;
+}
+
+/* 确保ECharts容器可以接收鼠标事件 */
+:deep(.echarts-container) {
+  position: relative !important;
+  pointer-events: auto !important;
 }
 
 /* 控制按钮样式优化 */
@@ -524,6 +565,13 @@ button:active {
 /* 控制按钮容器 */
 .absolute.top-4.right-4 {
   z-index: 100;
+  pointer-events: auto;
+}
+
+/* 确保按钮不干扰地图交互 */
+button {
+  pointer-events: auto;
+  z-index: 101;
 }
 
 /* 加载状态优化 */
