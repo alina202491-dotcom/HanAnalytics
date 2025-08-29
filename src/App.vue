@@ -545,7 +545,6 @@ const renderWorldMap = async (areaList: Array<any> = []) => {
         itemStyle: { areaColor: '#0f1621', borderColor: '#8aa0b5', borderWidth: 0.9 },
         emphasis: { label: { show: false }, itemStyle: { areaColor: '#3b82f6', borderColor: '#cfe1f0', borderWidth: 1.2 } },
         data: mapData,
-        selectedMode: false,
         zoom: 1.35,
         scaleLimit: { min: 0.8, max: 20 },
         layoutCenter: ['50%', '50%'],
