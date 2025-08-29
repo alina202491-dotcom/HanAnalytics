@@ -81,6 +81,7 @@
         </div>
 
         <div ref="echartsDOM" class="data-view"></div>
+        <div ref="mapDOM" class="map-view"></div>
 
         <div class="pt-20 grid md:grid-cols-2 sm:grid-cols-1 gap-[16px]">
           <Card class="box-border flex flex-col w-full h-[460px] overflow-hidden">
@@ -364,6 +365,7 @@ const getDatas = async () => {
           }
           if (!data.success) return toast({ description: data.message, variant: 'destructive' });
           tempResData.value[i] = i == 'echarts' ? renderEcharts(data.data.map((i: any) => `${i.name}${['today', '1d'].includes(timeValue.value) ? '点' : '日'}`), data.data.map((i: any) => `${i.value}`)) : data.data
+          if (i === 'area') renderWorldMap(data.data)
         } catch (error) {
           console.log(error);
         } finally {
@@ -462,13 +464,99 @@ const renderEcharts = async (dateList: Array<any>, valueList: Array<any>) => {
   canvasMain.value.setOption(option);
 };
 
+// 地图渲染
+const mapDOM = ref<HTMLDivElement>();
+const mapMain = ref<any>();
+let worldRegistered = false;
+let isoToName: Record<string, string> = {};
+const ensureWorldMap = async () => {
+  if (worldRegistered) return;
+  try {
+    // 使用包含 ISO3166-1-Alpha-2 的世界国家 GeoJSON，便于与后端的国家代码对齐
+    const res = await fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
+    const geoJSON = await res.json();
+    // 构建 iso2 到英文名称的映射，用于提示展示
+    try {
+      isoToName = (geoJSON.features || []).reduce((acc: any, f: any) => {
+        const iso2 = f?.properties?.['ISO3166-1-Alpha-2'];
+        const name = f?.properties?.name;
+        if (iso2) acc[iso2] = name || iso2;
+        return acc;
+      }, {} as Record<string, string>);
+    } catch (_) {
+      isoToName = {};
+    }
+    echarts.registerMap('world', geoJSON);
+    worldRegistered = true;
+  } catch (error) {
+    console.error('加载世界地图失败', error);
+  }
+};
+const toNumber = (v: any) => {
+  if (typeof v === 'number') return v;
+  const s = String(v || '0').trim();
+  if (s.endsWith('K')) return Math.round(parseFloat(s) * 1000);
+  const n = Number(s);
+  return Number.isFinite(n) ? n : 0;
+};
+const renderWorldMap = async (areaList: Array<any> = []) => {
+  await ensureWorldMap();
+  if (!mapMain.value) return;
+  // 使用 ISO2 作为匹配键，和 nameProperty 保持一致
+  const mapData = areaList.map((i: any) => ({ name: i.name, value: toNumber(i.value) }));
+  const maxVal = Math.max(1, ...mapData.map((d: any) => d.value || 0));
+  const option = {
+    tooltip: { trigger: 'item', formatter: (params: any) => `${isoToName[params.name] || params.name}: ${params.value || 0} visitors` },
+    visualMap: {
+      min: 0,
+      max: maxVal,
+      left: 20,
+      bottom: 20,
+      text: ['High', 'Low'],
+      inRange: { color: ['#0b1020', '#173a92', '#1D63ED'] },
+      calculable: true
+    },
+    series: [
+      {
+        type: 'map',
+        map: 'world',
+        roam: true,
+        // 与数据中使用的 name 字段对齐
+        nameProperty: 'ISO3166-1-Alpha-2',
+        label: { show: false },
+        itemStyle: { areaColor: '#101418', borderColor: '#1f2937' },
+        emphasis: { label: { show: false }, itemStyle: { areaColor: '#2563eb' } },
+        data: mapData,
+        selectedMode: false,
+        zoom: 1
+      }
+    ]
+  } as any;
+  mapMain.value.setOption(option, { notMerge: true });
+};
+
 onMounted(() => {
   //   图表
   canvasMain.value = markRaw(echarts.init(echartsDOM.value, null, { renderer: "svg", useDirtyRect: true }));
   window.addEventListener("resize", canvasMain.value.resize);
+  //   地图
+  mapMain.value = markRaw(echarts.init(mapDOM.value as unknown as HTMLDivElement, null, { renderer: 'svg', useDirtyRect: true }));
+  window.addEventListener('resize', mapMain.value.resize);
   // 站点列表
   getSiteList()
 })
+
+// 组件卸载清理
+if (import.meta.hot) {
+  import.meta.hot.on('vite:beforeFullReload', () => {
+    try {
+      window.removeEventListener('resize', canvasMain.value?.resize);
+      window.removeEventListener('resize', mapMain.value?.resize);
+      canvasMain.value?.dispose?.();
+      mapMain.value?.dispose?.();
+    } catch (e) {}
+  })
+}
 </script>
 <style>
 .fixed.inset-0.z-50,
