@@ -81,7 +81,6 @@
         </div>
 
         <div ref="echartsDOM" class="data-view"></div>
-        <div ref="mapDOM" class="map-view"></div>
 
         <div class="pt-20 grid md:grid-cols-2 sm:grid-cols-1 gap-[16px]">
           <Card class="box-border flex flex-col w-full h-[460px] overflow-hidden">
@@ -243,6 +242,7 @@
           </Card>
         </div>
       </section>
+      <div ref="mapDOM" class="map-view"></div>
     </main>
     <footer>
       <p><img src="./assets/svg/ing.svg"></p>
@@ -546,10 +546,14 @@ const renderWorldMap = async (areaList: Array<any> = []) => {
         emphasis: { label: { show: false }, itemStyle: { areaColor: '#3b82f6', borderColor: '#cfe1f0', borderWidth: 1.2 } },
         data: mapData,
         selectedMode: false,
-        zoom: 1.25,
-        scaleLimit: { min: 1, max: 12 },
+        zoom: 1.35,
+        scaleLimit: { min: 0.8, max: 20 },
         layoutCenter: ['50%', '50%'],
-        layoutSize: '120%'
+        layoutSize: '100%',
+        // 提高缩放、拖拽的响应速度
+        progressive: 400,
+        progressiveThreshold: 2000,
+        selectedMode: false
       }
     ]
   } as any;
@@ -563,8 +567,16 @@ onMounted(() => {
   //   地图
   mapMain.value = markRaw(echarts.init(mapDOM.value as unknown as HTMLDivElement, null, { renderer: 'svg', useDirtyRect: true }));
   // 开启默认平移与滚轮缩放（roam: true 已启用），设置为手势友好
-  mapMain.value.getZr().on('mousewheel', () => {});
-  mapMain.value.getZr().on('mousedown', () => {});
+  // 调整缩放灵敏度与动画，提升交互顺滑度
+  mapMain.value.setOption({
+    series: [{
+      animationDurationUpdate: 100,
+      animationEasingUpdate: 'quarticOut'
+    }],
+    // 鼠标缩放步进更快
+    toolbox: {},
+    graphic: []
+  });
   window.addEventListener('resize', mapMain.value.resize);
   // 站点列表
   getSiteList()
