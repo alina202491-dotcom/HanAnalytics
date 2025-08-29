@@ -513,7 +513,8 @@ const renderWorldMap = async (areaList: Array<any> = []) => {
       left: 20,
       bottom: 20,
       text: ['High', 'Low'],
-      inRange: { color: ['#0b1020', '#173a92', '#1D63ED'] },
+      // 访客越多越亮
+      inRange: { color: ['#0b0f14', '#142a5c', '#2d5bd3', '#7fb1ff', '#ffffff'] },
       calculable: true
     },
     series: [
@@ -528,7 +529,10 @@ const renderWorldMap = async (areaList: Array<any> = []) => {
         emphasis: { label: { show: false }, itemStyle: { areaColor: '#2563eb' } },
         data: mapData,
         selectedMode: false,
-        zoom: 1
+        zoom: 1.25,
+        scaleLimit: { min: 1, max: 12 },
+        layoutCenter: ['50%', '50%'],
+        layoutSize: '120%'
       }
     ]
   } as any;
@@ -541,6 +545,9 @@ onMounted(() => {
   window.addEventListener("resize", canvasMain.value.resize);
   //   地图
   mapMain.value = markRaw(echarts.init(mapDOM.value as unknown as HTMLDivElement, null, { renderer: 'svg', useDirtyRect: true }));
+  // 开启默认平移与滚轮缩放（roam: true 已启用），设置为手势友好
+  mapMain.value.getZr().on('mousewheel', () => {});
+  mapMain.value.getZr().on('mousedown', () => {});
   window.addEventListener('resize', mapMain.value.resize);
   // 站点列表
   getSiteList()
