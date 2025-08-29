@@ -9,6 +9,15 @@
 ![Han-Analytics](https://i0.wp.com/uxiaohan.github.io/v2/2024/09/1727007937.webp)
 ![Han-Analytics](https://i0.wp.com/uxiaohan.github.io/v2/2024/09/1726993735.webp)
 
+### 新增功能
+
+🌍 **交互式地图可视化**
+- 基于 ECharts 的世界地图展示访客地理分布
+- 支持地图拖拽、缩放、重置视图等交互操作  
+- 提供深色/明亮主题切换
+- 实时显示各国访客数量和分布热力图
+- 响应式设计，适配各种屏幕尺寸
+
 ### 部署
 
 - 登录到 [Cloudflare Login](https://dash.cloudflare.com/sign-up)，没有的注册一个 [Cloudflare SignUp](https://dash.cloudflare.com/sign-up)

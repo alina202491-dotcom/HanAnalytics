@@ -241,6 +241,14 @@
             </CardContent>
           </Card>
         </div>
+
+        <!-- 地图可视化组件 -->
+        <div class="pt-6 w-full">
+          <MapVisualization 
+            :data="resData.area" 
+            :loading="getDatasStatus"
+          />
+        </div>
       </section>
     </main>
     <footer>
@@ -285,6 +293,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import MapVisualization from '@/components/MapVisualization.vue'
 import vh from 'vh-plugin'
 import { Toaster } from '@/components/ui/toast'
 import { useToast } from '@/components/ui/toast/use-toast'
