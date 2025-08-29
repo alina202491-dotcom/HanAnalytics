@@ -505,29 +505,34 @@ const toNumber = (v: any) => {
 const renderWorldMap = async (areaList: Array<any> = []) => {
   await ensureWorldMap();
   if (!mapMain.value) return;
-  // 以 ISO2 为键，使用对数映射保证低量级也能区分，同时补齐无数据国家为 0
+  // 以 ISO2 为键，按“绝对访问量”映射亮度，并补齐无数据国家为 0
   const valueByIso: Record<string, number> = areaList.reduce((m: any, i: any) => {
     m[i.name] = toNumber(i.value);
     return m;
   }, {} as Record<string, number>);
-  const rawMax = Math.max(1, ...Object.values(valueByIso), 1);
   const mapData = (worldIsoList.length ? worldIsoList : Object.keys(valueByIso)).map((iso: string) => {
     const raw = valueByIso[iso] || 0;
-    const value = Math.log10(raw + 1); // 映射用于着色
+    // value 用绝对访问量（在 piecewise 中分段映射），raw 用于 tooltip 展示
+    const value = raw;
     return { name: iso, value, raw };
   });
-  const maxVal = Math.log10(rawMax + 1);
   const option = {
     tooltip: { trigger: 'item', formatter: (params: any) => `${isoToName[params.name] || params.name}: ${params.value || 0} visitors` },
     visualMap: {
-      min: 0,
-      max: maxVal,
+      type: 'piecewise',
       left: 20,
       bottom: 20,
-      text: ['High', 'Low'],
-      // 访客越多越亮（对数映射后线性渐变）
-      inRange: { color: ['#273449', '#355487', '#4a78f5', '#8fb5ff', '#ffffff'] },
-      calculable: true
+      text: ['更多', '更少'],
+      // 绝对访问量分段映射，确保不同时间段亮度标准一致
+      pieces: [
+        { lte: 0, color: '#182232', label: '0' },
+        { gt: 0, lte: 9, color: '#203046', label: '1-9' },
+        { gt: 9, lte: 99, color: '#294365', label: '10-99' },
+        { gt: 99, lte: 999, color: '#355e98', label: '100-999' },
+        { gt: 999, lte: 9999, color: '#4a7fea', label: '1k-9.9k' },
+        { gt: 9999, lte: 99999, color: '#8fb5ff', label: '10k-99k' },
+        { gt: 99999, color: '#ffffff', label: '≥100k' }
+      ]
     },
     series: [
       {
@@ -537,8 +542,8 @@ const renderWorldMap = async (areaList: Array<any> = []) => {
         // 与数据中使用的 name 字段对齐
         nameProperty: 'ISO3166-1-Alpha-2',
         label: { show: false },
-        itemStyle: { areaColor: '#111a23', borderColor: '#334155' },
-        emphasis: { label: { show: false }, itemStyle: { areaColor: '#3b82f6' } },
+        itemStyle: { areaColor: '#0f1621', borderColor: '#8aa0b5', borderWidth: 0.9 },
+        emphasis: { label: { show: false }, itemStyle: { areaColor: '#3b82f6', borderColor: '#cfe1f0', borderWidth: 1.2 } },
         data: mapData,
         selectedMode: false,
         zoom: 1.25,
