@@ -517,6 +517,7 @@ const renderWorldMap = async (areaList: Array<any> = []) => {
     return { name: iso, value, raw };
   });
   const option = {
+    animation: false,
     tooltip: { trigger: 'item', formatter: (params: any) => `${isoToName[params.name] || params.name}: ${params.value || 0} visitors` },
     visualMap: {
       type: 'piecewise',
@@ -545,13 +546,14 @@ const renderWorldMap = async (areaList: Array<any> = []) => {
         itemStyle: { areaColor: '#0f1621', borderColor: '#8aa0b5', borderWidth: 0.9 },
         emphasis: { label: { show: false }, itemStyle: { areaColor: '#3b82f6', borderColor: '#cfe1f0', borderWidth: 1.2 } },
         data: mapData,
-        zoom: 1.35,
-        scaleLimit: { min: 0.8, max: 20 },
+        zoom: 1.45,
+        scaleLimit: { min: 0.6, max: 32 },
         layoutCenter: ['50%', '50%'],
         layoutSize: '100%',
-        // 提高缩放、拖拽的响应速度
-        progressive: 400,
-        progressiveThreshold: 2000,
+        // 提高缩放、拖拽的响应速度，禁用系列动画
+        animation: false,
+        progressive: 0,
+        progressiveThreshold: 0,
         selectedMode: false
       }
     ]
@@ -567,14 +569,10 @@ onMounted(() => {
   mapMain.value = markRaw(echarts.init(mapDOM.value as unknown as HTMLDivElement, null, { renderer: 'svg', useDirtyRect: true }));
   // 开启默认平移与滚轮缩放（roam: true 已启用），设置为手势友好
   // 调整缩放灵敏度与动画，提升交互顺滑度
+  // 降低更新动画时长，进一步提升交互即时性
   mapMain.value.setOption({
-    series: [{
-      animationDurationUpdate: 100,
-      animationEasingUpdate: 'quarticOut'
-    }],
-    // 鼠标缩放步进更快
-    toolbox: {},
-    graphic: []
+    animation: false,
+    series: [{ animation: false }]
   });
   window.addEventListener('resize', mapMain.value.resize);
   // 站点列表
