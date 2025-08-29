@@ -469,6 +469,7 @@ const mapDOM = ref<HTMLDivElement>();
 const mapMain = ref<any>();
 let worldRegistered = false;
 let isoToName: Record<string, string> = {};
+let worldIsoList: Array<string> = [];
 const ensureWorldMap = async () => {
   if (worldRegistered) return;
   try {
@@ -483,8 +484,10 @@ const ensureWorldMap = async () => {
         if (iso2) acc[iso2] = name || iso2;
         return acc;
       }, {} as Record<string, string>);
+      worldIsoList = Object.keys(isoToName);
     } catch (_) {
       isoToName = {};
+      worldIsoList = [];
     }
     echarts.registerMap('world', geoJSON);
     worldRegistered = true;
@@ -502,9 +505,18 @@ const toNumber = (v: any) => {
 const renderWorldMap = async (areaList: Array<any> = []) => {
   await ensureWorldMap();
   if (!mapMain.value) return;
-  // 使用 ISO2 作为匹配键，和 nameProperty 保持一致
-  const mapData = areaList.map((i: any) => ({ name: i.name, value: toNumber(i.value) }));
-  const maxVal = Math.max(1, ...mapData.map((d: any) => d.value || 0));
+  // 以 ISO2 为键，使用对数映射保证低量级也能区分，同时补齐无数据国家为 0
+  const valueByIso: Record<string, number> = areaList.reduce((m: any, i: any) => {
+    m[i.name] = toNumber(i.value);
+    return m;
+  }, {} as Record<string, number>);
+  const rawMax = Math.max(1, ...Object.values(valueByIso), 1);
+  const mapData = (worldIsoList.length ? worldIsoList : Object.keys(valueByIso)).map((iso: string) => {
+    const raw = valueByIso[iso] || 0;
+    const value = Math.log10(raw + 1); // 映射用于着色
+    return { name: iso, value, raw };
+  });
+  const maxVal = Math.log10(rawMax + 1);
   const option = {
     tooltip: { trigger: 'item', formatter: (params: any) => `${isoToName[params.name] || params.name}: ${params.value || 0} visitors` },
     visualMap: {
@@ -513,8 +525,8 @@ const renderWorldMap = async (areaList: Array<any> = []) => {
       left: 20,
       bottom: 20,
       text: ['High', 'Low'],
-      // 访客越多越亮
-      inRange: { color: ['#0b0f14', '#142a5c', '#2d5bd3', '#7fb1ff', '#ffffff'] },
+      // 访客越多越亮（对数映射后线性渐变）
+      inRange: { color: ['#273449', '#355487', '#4a78f5', '#8fb5ff', '#ffffff'] },
       calculable: true
     },
     series: [
@@ -525,8 +537,8 @@ const renderWorldMap = async (areaList: Array<any> = []) => {
         // 与数据中使用的 name 字段对齐
         nameProperty: 'ISO3166-1-Alpha-2',
         label: { show: false },
-        itemStyle: { areaColor: '#101418', borderColor: '#1f2937' },
-        emphasis: { label: { show: false }, itemStyle: { areaColor: '#2563eb' } },
+        itemStyle: { areaColor: '#111a23', borderColor: '#334155' },
+        emphasis: { label: { show: false }, itemStyle: { areaColor: '#3b82f6' } },
         data: mapData,
         selectedMode: false,
         zoom: 1.25,
