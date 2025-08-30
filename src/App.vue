@@ -25,10 +25,10 @@
             <div class="w-3/6">
               <Select :disabled="siteList.length < 1 || getDatasStatus" v-model="siteValue"
                 @update:model-value="getDatas">
-                <SelectTrigger class="w-[218px]">
+                <SelectTrigger class="w-[218px] bg-white/80 text-gray-900 border border-white/60 backdrop-blur-md shadow-sm hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-blue-400/50">
                   <SelectValue placeholder="选择站点" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent class="bg-white/95 text-gray-900 border border-gray-200 backdrop-blur-md shadow-xl">
                   <SelectGroup>
                     <SelectLabel>Web Site</SelectLabel>
                     <SelectItem :value="i" v-for="i in siteList" :key="i">{{ i }}</SelectItem>
@@ -39,10 +39,10 @@
             <div class="w-3/6">
               <Select :disabled="siteList.length < 1 || getDatasStatus" v-model="timeValue"
                 @update:model-value="getDatas">
-                <SelectTrigger class="w-[218px]">
+                <SelectTrigger class="w-[218px] bg-white/80 text-gray-900 border border-white/60 backdrop-blur-md shadow-sm hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-blue-400/50">
                   <SelectValue placeholder="选择周期" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent class="bg-white/95 text-gray-900 border border-gray-200 backdrop-blur-md shadow-xl">
                   <SelectGroup>
                     <SelectLabel>Cycle Time</SelectLabel>
                     <SelectItem :value="i.value" v-for="i in timeList" :key="i.name">{{ i.name }}</SelectItem>
