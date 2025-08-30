@@ -52,7 +52,7 @@
             </div>
           </div>
           <div
-            class="flex justify-end text-center md:text-right line-clamp-1 [&>.views-item]:flex [&>.views-item]:flex-col [&>.views-item]:items-center md:[&>.views-item]:items-end [&>.views-item]:gap-4 [&>.views-item>span]:text-sm [&>.views-item>p]:text-3xl [&>.views-item>p]:line-clamp-1 [&>.views-item>p]:w-full">
+            class="flex justify-end text-center md:text-right line-clamp-1 [&>.views-item]:flex [&>.views-item]:flex-col [&>.views-item]:items-center md:[&>.views-item]:items-end [&>.views-item]:gap-4 [&>.views-item>span]:text-sm [&>.views-item>p]:text-3xl [&>.views-item>p]:line-clamp-1 [&>.views-item>p]:w-full bg-white/80 text-gray-900 border border-white/60 rounded-lg px-3 py-2 backdrop-blur-md shadow-sm">
             <div class="views-item w-full overflow-hidden">
               <span>Views</span>
               <div class="space-y-2 w-[50%]" v-if="resData.visit.views === undefined">
