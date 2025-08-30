@@ -38,6 +38,26 @@
     pointer-events: none;
   }
 
+  // 加载状态：更亮的基底与更轻的蒙层，避免加载慢时过暗
+  &.acg-loading {
+    &::before {
+      filter: brightness(0.78) saturate(1.03) blur(0px);
+    }
+    &::after {
+      background: linear-gradient(180deg, rgba(8,12,18,0.10) 0%, rgba(8,12,18,0.10) 100%);
+    }
+  }
+
+  // 图片就绪：恢复正常对比度
+  &.acg-ready {
+    &::before {
+      filter: brightness(0.58) saturate(1.05) blur(0px);
+    }
+    &::after {
+      background: linear-gradient(180deg, rgba(8,12,18,0.30) 0%, rgba(8,12,18,0.30) 100%);
+    }
+  }
+
   & > header {
     position: fixed;
     left: 0;

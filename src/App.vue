@@ -604,29 +604,45 @@ onMounted(() => {
   // 站点列表
   getSiteList()
 
-  // 加载随机 ACG 背景
-  ;(async () => {
+  // 加载随机 ACG 背景（并发预加载 + 本地缓存 + 首屏更亮）
+  ;(() => {
+    const root = document.querySelector('.han_analytics') as HTMLElement | null;
+    if (!root) return;
+    root.classList.add('acg-loading');
+    const setBg = (url: string) => {
+      root.style.setProperty('--acg-bg-url', `url(${url})`);
+      root.classList.remove('acg-loading');
+      root.classList.add('acg-ready');
+      try { localStorage.setItem('acg_bg_last', url); } catch {}
+    };
+    // 先用缓存的一张，避免首屏过暗
     try {
-      // 多个公共源，任取可用的一个（使用 CORS 友好且稳定的）
-      const sources = [
-        'https://api.ixiaowai.cn/api/api.php', // 随机 ACG 图，返回图片直链
-        'https://www.dmoe.cc/random.php',
-        'https://api.btstu.cn/sjbz/api.php?lx=dongman&format=images'
-      ];
-      const pick = () => sources[Math.floor(Math.random() * sources.length)];
-      const imgUrl = pick();
-      // 预加载以避免闪烁
-      await new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => resolve(true);
-        img.onerror = reject;
-        img.src = imgUrl + (imgUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
-      });
-      document.querySelector('.han_analytics')?.setAttribute('style', `--acg-bg-url: url(${imgUrl});`);
-    } catch (e) {
-      // 忽略错误，保持纯色背景
-    }
+      const cached = localStorage.getItem('acg_bg_last');
+      if (cached) setBg(cached);
+    } catch {}
+    const sources = [
+      'https://api.ixiaowai.cn/api/api.php',
+      'https://www.dmoe.cc/random.php',
+      'https://api.btstu.cn/sjbz/api.php?lx=dongman&format=images',
+      'https://img.xjh.me/random_img.php?type=bg&ctype=acg&return=302'
+    ];
+    const preload = (rawUrl: string) => new Promise<string>((resolve, reject) => {
+      const url = rawUrl + (rawUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
+      const img = new Image();
+      img.onload = () => resolve(url);
+      img.onerror = reject;
+      img.src = url;
+    });
+    let done = false;
+    const timer = setTimeout(() => { done = true; }, 1800);
+    sources.forEach((src) => {
+      preload(src).then((url) => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        setBg(url);
+      }).catch(() => {});
+    });
   })();
 })
 
