@@ -565,22 +565,7 @@ const renderWorldMap = async (areaList: Array<any> = []) => {
         progressive: 0,
         progressiveThreshold: 0,
         selectedMode: false,
-        // 为小区域（如 HK/MO）增加标记点，确保可见
-        markPoint: {
-          animation: false,
-          symbol: 'circle',
-          symbolSize: (val: any) => {
-            const raw = Array.isArray(val) ? (val[2] || 0) : 0;
-            const size = Math.max(6, Math.min(18, Math.log10((raw || 0) + 10) * 6));
-            return size;
-          },
-          label: { show: false },
-          itemStyle: { color: '#FFD166', borderColor: '#ffffff', borderWidth: 0.6 },
-          data: [
-            (() => { const raw = (valueByIso['HK'] || valueByIso['CN-HK'] || 0); return raw > 0 ? { name: 'HK', coord: [114.1694, 22.3193], value: raw } : null })(),
-            (() => { const raw = (valueByIso['MO'] || valueByIso['CN-MO'] || 0); return raw > 0 ? { name: 'MO', coord: [113.5439, 22.1987], value: raw } : null })()
-          ].filter(Boolean) as any
-        }
+        
       }
     ]
   } as any;
