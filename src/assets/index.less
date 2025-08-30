@@ -9,6 +9,54 @@
   align-items: center;
   width: 100%;
   height: max-content;
+  position: relative;
+  --acg-bg-url: none;
+
+  // 背景图层（随机 ACG）
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: #0a0e14;
+    background-image: var(--acg-bg-url);
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    filter: brightness(0.58) saturate(1.05) blur(0px);
+    transform: translateZ(0);
+    pointer-events: none;
+  }
+
+  // 半透明暗色蒙层，保证内容可读
+  &::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, rgba(8,12,18,0.30) 0%, rgba(8,12,18,0.30) 100%);
+    pointer-events: none;
+  }
+
+  // 加载状态：更亮的基底与更轻的蒙层，避免加载慢时过暗
+  &.acg-loading {
+    &::before {
+      filter: brightness(0.78) saturate(1.03) blur(0px);
+    }
+    &::after {
+      background: linear-gradient(180deg, rgba(8,12,18,0.10) 0%, rgba(8,12,18,0.10) 100%);
+    }
+  }
+
+  // 图片就绪：恢复正常对比度
+  &.acg-ready {
+    &::before {
+      filter: brightness(0.58) saturate(1.05) blur(0px);
+    }
+    &::after {
+      background: linear-gradient(180deg, rgba(8,12,18,0.30) 0%, rgba(8,12,18,0.30) 100%);
+    }
+  }
 
   & > header {
     position: fixed;
@@ -18,8 +66,8 @@
     width: 100%;
     height: max-content;
     border-bottom: solid #e4e4e7 1px;
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(18px);
     font-family: "HarmonyOS Sans SC" !important;
     z-index: 99999999;
 
@@ -92,6 +140,20 @@
       & > .data-view {
         width: 100%;
         height: 200px;
+      }
+
+      & > .map-view {
+        margin: 24px 0 0;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        min-height: 420px;
+        background: #0b0f14;
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: grab;
+        &:active {
+          cursor: grabbing;
+        }
       }
 
       button {
