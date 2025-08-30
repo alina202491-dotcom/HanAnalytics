@@ -603,6 +603,31 @@ onMounted(() => {
   window.addEventListener('resize', mapMain.value.resize);
   // 站点列表
   getSiteList()
+
+  // 加载随机 ACG 背景
+  ;(async () => {
+    try {
+      // 多个公共源，任取可用的一个（使用 CORS 友好且稳定的）
+      const sources = [
+        'https://api.ixiaowai.cn/api/api.php', // 随机 ACG 图，返回图片直链
+        'https://www.dmoe.cc/random.php',
+        'https://api.btstu.cn/sjbz/api.php?lx=dongman&format=images'
+      ];
+      const pick = () => sources[Math.floor(Math.random() * sources.length)];
+      const imgUrl = pick();
+      // 预加载以避免闪烁
+      await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(true);
+        img.onerror = reject;
+        img.src = imgUrl + (imgUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
+      });
+      document.querySelector('.han_analytics')?.setAttribute('style', `--acg-bg-url: url(${imgUrl});`);
+    } catch (e) {
+      // 忽略错误，保持纯色背景
+    }
+  })();
 })
 
 // 组件卸载清理

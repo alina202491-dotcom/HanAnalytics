@@ -9,6 +9,33 @@
   align-items: center;
   width: 100%;
   height: max-content;
+  position: relative;
+  --acg-bg-url: none;
+
+  // 背景图层（随机 ACG）
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: #0a0e14;
+    background-image: var(--acg-bg-url);
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    filter: brightness(0.35) saturate(1.05) blur(0px);
+    transform: translateZ(0);
+  }
+
+  // 半透明暗色蒙层，保证内容可读
+  &::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, rgba(8,12,18,0.66) 0%, rgba(8,12,18,0.66) 100%);
+    pointer-events: none;
+  }
 
   & > header {
     position: fixed;
